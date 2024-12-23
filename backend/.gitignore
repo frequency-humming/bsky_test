@@ -1,0 +1,18 @@
+# dependencies
+/node_modules
+
+# production
+/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# typescript
+package-lock.json

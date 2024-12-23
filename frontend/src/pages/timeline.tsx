@@ -1,0 +1,15 @@
+import Feed  from '../feed';
+
+export default function Timeline() {
+ 
+  return (
+    <>
+      <div style={{ padding: '25px', textAlign: 'center' }}>
+        <Feed />
+      </div>    
+    </>
+  );
+}
+
+
+

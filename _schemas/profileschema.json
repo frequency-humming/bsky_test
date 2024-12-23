@@ -1,0 +1,114 @@
+{
+    "did": "did:plc:347cuxao55x6dfj5j7gnunxz",
+    "handle": "frequencyhumming.bsky.social",
+    "displayName": "low frequency humming",
+    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:347cuxao55x6dfj5j7gnunxz/bafkreigooyqqm4u24n7h2j5j5qplhqpwornwgjz7vuduxymghg44jfqo4u@jpeg",
+    "associated": {
+        "lists": 0,
+        "feedgens": 0,
+        "starterPacks": 0,
+        "labeler": false
+    },
+    "viewer": {
+        "muted": false,
+        "blockedBy": false,
+        "knownFollowers": {
+            "count": 27,
+            "followers": [
+                {
+                    "did": "did:plc:qoku4gioklgacektp6vhmskw",
+                    "handle": "happygeek.bsky.social",
+                    "displayName": "Happygeek",
+                    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:qoku4gioklgacektp6vhmskw/bafkreiahmpammc3c4yqoffjnvijiwnx6tkndrgzkdi6fpx7bqnbrmyrdcy@jpeg",
+                    "associated": {
+                        "chat": {
+                            "allowIncoming": "all"
+                        }
+                    },
+                    "viewer": {
+                        "muted": false,
+                        "blockedBy": false,
+                        "following": "at://did:plc:347cuxao55x6dfj5j7gnunxz/app.bsky.graph.follow/3lbgrcmpfzf2b",
+                        "followedBy": "at://did:plc:qoku4gioklgacektp6vhmskw/app.bsky.graph.follow/3lbhcoj6quk2a"
+                    },
+                    "labels": [],
+                    "createdAt": "2023-04-25T14:29:09.771Z"
+                },
+                {
+                    "did": "did:plc:4ubj6oysfibpv4s5mrcxxrsw",
+                    "handle": "jodiem.bsky.social",
+                    "displayName": "JodieM",
+                    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:4ubj6oysfibpv4s5mrcxxrsw/bafkreiaf4p3t26ygxftycj3efirzuffejm4zzokcsudookrtsfgjtcig3y@jpeg",
+                    "viewer": {
+                        "muted": false,
+                        "blockedBy": false,
+                        "following": "at://did:plc:347cuxao55x6dfj5j7gnunxz/app.bsky.graph.follow/3lbljptidwd2q",
+                        "followedBy": "at://did:plc:4ubj6oysfibpv4s5mrcxxrsw/app.bsky.graph.follow/3lblhzx4kza2c"
+                    },
+                    "labels": [],
+                    "createdAt": "2023-04-25T12:31:24.874Z"
+                },
+                {
+                    "did": "did:plc:m3p5j3o66yghzlkbwnbgmcsi",
+                    "handle": "merill.net",
+                    "displayName": "Merill Fernando 💚",
+                    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:m3p5j3o66yghzlkbwnbgmcsi/bafkreid4iexettc7kwclgh52jj4p5tbxmu6v4zywicdp2berr4jfvdiibm@jpeg",
+                    "associated": {
+                        "chat": {
+                            "allowIncoming": "none"
+                        }
+                    },
+                    "viewer": {
+                        "muted": false,
+                        "blockedBy": false,
+                        "following": "at://did:plc:347cuxao55x6dfj5j7gnunxz/app.bsky.graph.follow/3larcyn4kes2t",
+                        "followedBy": "at://did:plc:m3p5j3o66yghzlkbwnbgmcsi/app.bsky.graph.follow/3lase4xmy372q"
+                    },
+                    "labels": [],
+                    "createdAt": "2023-04-23T22:25:56.230Z"
+                },
+                {
+                    "did": "did:plc:kf6jwgs7bai6jjyjvr2owbqj",
+                    "handle": "julianduque.co",
+                    "displayName": "Julián Duque",
+                    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:kf6jwgs7bai6jjyjvr2owbqj/bafkreihsxr3usnjtvoztr4qhgwsup4y7rcvo6k5l2ok37jkxbaqptnfcgi@jpeg",
+                    "viewer": {
+                        "muted": false,
+                        "blockedBy": false,
+                        "following": "at://did:plc:347cuxao55x6dfj5j7gnunxz/app.bsky.graph.follow/3lardbu6qa32f",
+                        "followedBy": "at://did:plc:kf6jwgs7bai6jjyjvr2owbqj/app.bsky.graph.follow/3lbbnmeyrot2r"
+                    },
+                    "labels": [],
+                    "createdAt": "2023-04-26T11:53:38.205Z"
+                },
+                {
+                    "did": "did:plc:n32ygebxbm6bzep5paehvzwy",
+                    "handle": "granchacrafree.bsky.social",
+                    "displayName": "Thierry Revelin ",
+                    "avatar": "https://cdn.bsky.app/img/avatar/plain/did:plc:n32ygebxbm6bzep5paehvzwy/bafkreieahbfbq2a66nkefupgyyc4j5v22gptymqbcipidhtxhgzvw645xq@jpeg",
+                    "associated": {
+                        "chat": {
+                            "allowIncoming": "following"
+                        }
+                    },
+                    "viewer": {
+                        "muted": false,
+                        "blockedBy": false,
+                        "following": "at://did:plc:347cuxao55x6dfj5j7gnunxz/app.bsky.graph.follow/3larct27xov2c",
+                        "followedBy": "at://did:plc:n32ygebxbm6bzep5paehvzwy/app.bsky.graph.follow/3laz4bx64ee2a"
+                    },
+                    "labels": [],
+                    "createdAt": "2023-08-16T16:22:50.731Z"
+                }
+            ]
+        }
+    },
+    "labels": [],
+    "createdAt": "2024-10-21T17:13:56.811Z",
+    "description": "Web Dev & Salesforce",
+    "indexedAt": "2024-11-15T20:12:41.028Z",
+    "banner": "https://cdn.bsky.app/img/banner/plain/did:plc:347cuxao55x6dfj5j7gnunxz/bafkreierptjjoytrdv7ujj2n3ps6nz3b4qxcvhc7q7iv5ygaykuejllon4@jpeg",
+    "followersCount": 53,
+    "followsCount": 805,
+    "postsCount": 3
+}

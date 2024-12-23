@@ -1,4 +1,4 @@
-import Image from 'next/image';
+/* eslint-disable @next/next/no-img-element */
 import {fetchTimeline} from './api';
 import { PostWrapper} from '../types';
 import { useEffect, useState } from 'react';
@@ -77,13 +77,13 @@ export default function Feed() {
                 const data = postWrapper.post;
                 return (
                     <div key={index} className="mb-5 border border-gray-300 p-4 flex flex-col items-center text-center">
-                        <Image src={data.author.avatar} alt="avatar" className="w-12 h-12 rounded-full" width={150} height={150}/>
+                        <img src={data.author.avatar} alt="avatar" className="w-12 h-12 rounded-full" width={150} height={150}/>
                         <h3 className="mt-2 text-gray-500 font-bold">{data.author.displayName} - {data.author.handle}</h3>
                         <p className="mt-1 text-gray-100">{data.record.text}</p>
                         <div>
                         {data.embed?.images?.map((image, index) => (
                             <div key={index} className="mt-4">
-                                <Image
+                                <img
                                 src={image.fullsize} 
                                 alt={image.alt || "Embedded image"}
                                 width={400} 
@@ -107,7 +107,7 @@ export default function Feed() {
                                     <p>{data.embed.external.title}</p>
                                     <p>{data.embed.external.description}</p>  
                                     <div className="flex justify-center items-center">
-                                        <Image
+                                        <img
                                         src={data.embed.external.thumb} 
                                         alt={"External image content"}
                                         width={400} 

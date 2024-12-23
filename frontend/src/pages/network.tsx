@@ -4,7 +4,7 @@ export default function Network() {
   const [events, setEvents] = useState<string[]>([]);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://127.0.0.1:3001/ws'); // WebSocket endpoint
+    const ws = new WebSocket('ws://127.0.0.1:3001/api/ws'); // WebSocket endpoint
 
     ws.onmessage = (message) => {
       console.log("in websocket");

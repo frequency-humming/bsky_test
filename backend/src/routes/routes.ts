@@ -15,7 +15,7 @@ let eventEmitter:any;
 export default async function routes(fastify: FastifyInstance,
     { oauthClient,db,baseIdResolver,resolver}: RouteDependencies){
 
-    fastify.get('/api/profile',async (req,resp) => {
+    fastify.get('/profile',async (req,resp) => {
         const agent = await getSessionAgent(req, resp, oauthClient);
         if (agent && agent.did) {
             fastify.log.info("agent : "+agent.did);
@@ -23,11 +23,11 @@ export default async function routes(fastify: FastifyInstance,
             const posts = await agent.getAuthorFeed({ actor: agent.did });
             return resp.send({ message: profile.data , posts : posts.data.feed});
         }else {
-          return resp.send({url : 'http://127.0.0.1:3000/login'});
+          return resp.send({url : 'http://127.0.0.1:3001/login'});
         }
       });
       
-      fastify.post<{ Body: { input: string }; Reply: { message: string } }>('/api/message', async(req, resp)=> {
+      fastify.post<{ Body: { input: string }; Reply: { message: string } }>('/message', async(req, resp)=> {
         const { input } = req.body;
         const agent = await getSessionAgent(req, resp,oauthClient);
         if (!input || !agent) {
@@ -40,12 +40,13 @@ export default async function routes(fastify: FastifyInstance,
         return { message: post.uri };
       })
       
-      fastify.post<{Body: {handle:string}; Reply:{message: string}}>('/api/login', async(request,reply)=> {
+      fastify.post<{Body: {handle:string}; Reply:{message: string}}>('/login', async(request,reply)=> {
         const handle = request.body?.handle;
             if (typeof handle !== 'string' || !isValidHandle(handle)) {
               return reply.send({ message: 'invalid handle' })
             }
             // Initiate the OAuth flow
+            console.log("11111111111111 -> in oauth");
             try {
               const url = await oauthClient.authorize(handle, {
                 scope: 'atproto transition:generic',
@@ -57,6 +58,7 @@ export default async function routes(fastify: FastifyInstance,
       })
       
       fastify.get('/oauth/callback', async (req, rep) => {
+        console.log("222222222222222222 -> in callback");
         const params = new URLSearchParams(req.raw.url?.split('?')[1] || '');
         try {
           const { session } = await oauthClient.callback(params);
@@ -67,7 +69,7 @@ export default async function routes(fastify: FastifyInstance,
           fastify.log.info('Saving session', { did: session.did });
           clientSession.did = session.did;
           await clientSession.save();
-          return rep.redirect('/');
+          return rep.redirect('/api');
         } catch (err) {
           req.log.error({ err }, 'OAuth callback failed');
           return rep.redirect('/?error');
@@ -77,12 +79,12 @@ export default async function routes(fastify: FastifyInstance,
       fastify.get('/', async (req, rep) => {
         const agent = await getSessionAgent(req, rep, oauthClient);
         if (agent) {
-          return rep.redirect('http://127.0.0.1:3000/timeline');
+          return rep.redirect('http://127.0.0.1:3001/timeline');
         }
-        return rep.redirect('http://127.0.0.1:3000/login');
+        return rep.redirect('http://127.0.0.1:3001/login');
       });
       
-      fastify.get<{Querystring: TimelineQuery}>('/api/timeline',async(req, rep):Promise<{ feed: FeedViewPost[]; cursor: string | undefined }> => {
+      fastify.get<{Querystring: TimelineQuery}>('/timeline',async(req, rep):Promise<{ feed: FeedViewPost[]; cursor: string | undefined }> => {
         
         const agent = await getSessionAgent(req, rep, oauthClient);
         if (!agent) {

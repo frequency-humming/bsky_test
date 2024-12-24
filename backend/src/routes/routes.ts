@@ -26,6 +26,20 @@ export default async function routes(fastify: FastifyInstance,
           return resp.send({url : 'http://127.0.0.1:3000/login'});
         }
       });
+
+      fastify.post<{Body: {postUri: string, postCid: string}; Reply:{message: string}}>('/api/postlike', async(req,rep) => {  
+        const { postUri, postCid } = req.body;
+        const agent = await getSessionAgent(req, rep, oauthClient);
+        if (!agent) {
+          return rep.status(401).send({ message: 'Unauthorized. Please log in.' });
+        }
+        try {
+          await agent.like(postUri,postCid);
+          return rep.send({ message: 'Post liked' });
+        } catch (error) {
+          return rep.status(500).send({ message: 'Failed to like post' });
+        }
+      });
       
       fastify.post<{ Body: { input: string }; Reply: { message: string } }>('/api/message', async(req, resp)=> {
         const { input } = req.body;

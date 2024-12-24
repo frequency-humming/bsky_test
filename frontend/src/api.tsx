@@ -48,5 +48,28 @@ const fetchProfile = async () => {
   return {profile, feed, error, url};
 };
 
-export {fetchProfile, fetchTimeline};
+const postLike = async (postUri: string, postCid: string) => {
+  try{
+  const response = await fetch("/api/postlike", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      postUri,
+      postCid
+    })
+  });
+  if (!response.ok) {
+    throw new Error('Failed to like post');
+  }
+  const data = await response.json();
+  return data;
+  }catch(err){
+    console.log("error in like api "+err);
+  }
+};
+
+export {fetchProfile, fetchTimeline, postLike};
 

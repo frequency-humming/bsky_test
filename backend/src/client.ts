@@ -61,23 +61,6 @@ export const createClient = async (db: Database) => {
   })
 }
 
-// export function createIngester(db: Database, idResolver: IdResolver) {
-//   return new Firehose({
-//     idResolver,
-//     handleEvent: async (evt) => {
-//       // Watch for write events
-//       if(evt.event === 'create'){
-//         await console.log(" in websocket "+JSON.stringify(evt));
-//       }
-          
-//     },
-//     onError: (err) => {
-//       console.error({ err }, 'error on firehose ingestion')
-//     },
-//     filterCollections: ['app.bsky.feed.post'],
-//   })
-// }
-
 export function createIngester(db: Database, idResolver: IdResolver) {
   const firehose = new Firehose({
     idResolver,

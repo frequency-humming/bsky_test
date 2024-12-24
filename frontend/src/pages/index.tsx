@@ -1,8 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 import type { NextPage } from 'next';
 import { useEffect, useState } from 'react';
 import type { PostWrapper, Profile } from '../../types';
 import { fetchProfile } from '@/api';
-import Image from 'next/image';
 
 const Home: NextPage = () => {
   const [profile, setProfile] = useState<Profile>();
@@ -14,7 +14,9 @@ const Home: NextPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        if(post){
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
         const response = await fetchProfile();
         const data = await response;
         if (data.error) {
@@ -24,8 +26,10 @@ const Home: NextPage = () => {
           window.location.href = data.url;
         }
         //setProfile(() => data.profile);
-        if(data.profile){
+        if(data.profile && post){
           setProfile({ ...data.profile });
+        }else if (data.profile){
+          setProfile(data.profile);
         }     
         setFeed(data.feed);
       } catch (error) {
@@ -74,7 +78,7 @@ const Home: NextPage = () => {
               <div className='flex flex-row items-center mt-6 p-5'>
                 <div className='px-5'>
                   {profile.avatar && (
-                    <Image
+                    <img
                       src={profile.avatar}
                       alt="avatar"
                       className="rounded-full"
@@ -100,7 +104,7 @@ const Home: NextPage = () => {
           )}
       </div>
       )}
-
+      {profile &&
       <div className="mt-8 mt-6 p-2 text-center">
         <form onSubmit={handleSubmit} className="space-y-4">
           <h1>Make a post</h1>
@@ -120,7 +124,7 @@ const Home: NextPage = () => {
         </form>
         {error && <p className="text-red-500">{error}</p>}
         {post && <p className="mt-6 p-2">Post created: {post}</p>}
-      </div>
+      </div>}
       {feed && feed.map((posts,index) => {
         return (
           <div className="flex flex-col mt-6 p-2 items-center text-center" key={index}>

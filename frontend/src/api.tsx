@@ -28,7 +28,7 @@ const fetchTimeline = async () => {
 const fetchProfile = async () => {
   let profile:Profile | null = null;
   let feed:PostWrapper[] = [];
-  let url:string = '';
+  let redirect:string = '';
   let error:string = '';
   try {
     const response = await fetch('/api/profile', {
@@ -39,14 +39,37 @@ const fetchProfile = async () => {
       throw new Error('Failed to fetch timeline client');
     }
     const data = await response.json();
-    url = data.url;
+    redirect = data.redirect;
     profile=data.message;
     feed=data.posts;
   } catch (err) {
     error = 'Error fetching data '+err;
   }
-  return {profile, feed, error, url};
+  return {profile, feed, error, redirect};
 };
 
-export {fetchProfile, fetchTimeline};
+const postLike = async (postUri: string, postCid: string) => {
+  try{
+  const response = await fetch("/api/postlike", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      postUri,
+      postCid
+    })
+  });
+  if (!response.ok) {
+    throw new Error('Failed to like post');
+  }
+  const data = await response.json();
+  return data;
+  }catch(err){
+    console.log("error in like api "+err);
+  }
+};
+
+export {fetchProfile, fetchTimeline, postLike};
 

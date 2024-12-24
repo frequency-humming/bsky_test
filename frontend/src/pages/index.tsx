@@ -3,6 +3,7 @@ import type { NextPage } from 'next';
 import { useEffect, useState } from 'react';
 import type { PostWrapper, Profile } from '../../types';
 import { fetchProfile } from '@/api';
+import { useRouter } from 'next/router';
 
 const Home: NextPage = () => {
   const [profile, setProfile] = useState<Profile>();
@@ -10,6 +11,7 @@ const Home: NextPage = () => {
   const [post, setPost] = useState<string>();
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState<string>('');
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,8 +25,9 @@ const Home: NextPage = () => {
         if (data.error) {
           setError('Failed to fetch data');
         }
-        if(data.url){
-          window.location.href = data.url;
+        if (data.redirect) {
+          router.push(data.redirect);
+          return;
         }
         //setProfile(() => data.profile);
         if(data.profile && post){
@@ -41,6 +44,7 @@ const Home: NextPage = () => {
     };
 
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post]);
 
   const handleSubmit = async (e: React.FormEvent) => {

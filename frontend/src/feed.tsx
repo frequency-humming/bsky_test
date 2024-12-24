@@ -1,20 +1,29 @@
 /* eslint-disable @next/next/no-img-element */
-import {fetchTimeline} from './api';
+import {fetchTimeline,postLike} from './api';
 import { PostWrapper} from '../types';
 import { useEffect, useState } from 'react';
+import { RepostIcon, LikeIcon } from './icons';
 
 export default function Feed() {
   const [error, setError] = useState<string>();
   const [posts, setPosts] = useState<PostWrapper[]>([]);
   const [page, setPage] = useState(1);
   const [showDiv, setDiv] = useState(false);
+  // Track liked posts with a Map
+  const [likedPosts, setLikedPosts] = useState<Map<string, boolean>>(new Map());
+  // Track like counts separately
+  const [likeCounts, setLikeCounts] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     const timeline = async () => {
     const data = await fetchTimeline();
     setPosts(data.posts);
+    const initialCounts = new Map();
+      data.posts.forEach(record => {
+        initialCounts.set(record.post.uri, record.post.likeCount);
+      });
+      setLikeCounts(initialCounts);
     setError(data.error);
-    
     }
     timeline();
   },[])
@@ -65,6 +74,34 @@ export default function Feed() {
       clearTimeout(timer);
     };
   }, []);
+
+  const handleLikeClick = async (params: { postUri: string; postCid: string , count:number}) => {
+    const { postUri, postCid , count} = params;
+    
+    try {
+      if(likedPosts.get(postUri)){
+        console.log('Already liked');
+        return;
+      }
+      const data = await postLike(postUri, postCid);
+      console.log('Post liked:', data);
+      // Toggle liked state for this specific post
+      setLikedPosts(prev => {
+        const newMap = new Map(prev);
+        newMap.set(postUri, true);
+        return newMap;
+      });
+      // Update like count for this specific post
+      setLikeCounts(prev => {
+        const newCounts = new Map(prev);
+        const currentCount = prev.get(postUri) || count;
+        newCounts.set(postUri, currentCount + (likedPosts.get(postUri) ? 0 : 1));
+        return newCounts;
+      });
+    } catch (error) {
+      console.error('Like error:', error);
+    }
+  };
   
   return (
     <div style={{ padding: '50px', textAlign: 'center' }}>
@@ -75,6 +112,8 @@ export default function Feed() {
         <div>
             {posts.map((postWrapper, index) => {
                 const data = postWrapper.post;
+                const isLiked = likedPosts.get(data.uri);
+                const currentLikeCount = likeCounts.get(data.uri) || data.likeCount;
                 return (
                     <div key={index} className="mb-5 border border-gray-300 p-4 flex flex-col items-center text-center">
                         <img src={data.author.avatar} alt="avatar" className="w-12 h-12 rounded-full" width={150} height={150}/>
@@ -117,6 +156,18 @@ export default function Feed() {
                                     </div>
                                 </div>
                             }
+                        </div>
+                        <div className="flex items-center justify-center">
+                          <RepostIcon/>
+                          <p className="p-2">{data.repostCount}</p> 
+                          <LikeIcon className={isLiked ? 'text-red-500' : ''} onClick={() => handleLikeClick({
+                            postUri: data.uri,
+                            postCid: data.cid,
+                            count:data.likeCount
+                          })}/>
+                          <p className={`p-2 ${isLiked ? 'text-red-500' : ''}`}>
+                            {currentLikeCount}
+                          </p> 
                         </div>
                         <p className="mt-1 text-gray-100">{data.record.createdAt}</p>
                     </div>                   

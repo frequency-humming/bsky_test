@@ -15,15 +15,30 @@ let eventEmitter:any;
 export default async function routes(fastify: FastifyInstance,
     { oauthClient,db,baseIdResolver,resolver}: RouteDependencies){
 
-    fastify.get('/profile',async (req,resp) => {
-        const agent = await getSessionAgent(req, resp, oauthClient);
+    fastify.get('/profile',async (req,rep) => {
+        const agent = await getSessionAgent(req, rep, oauthClient);
         if (agent && agent.did) {
             fastify.log.info("agent : "+agent.did);
             const profile = await agent.getProfile({ actor: agent.did });
             const posts = await agent.getAuthorFeed({ actor: agent.did });
-            return resp.send({ message: profile.data , posts : posts.data.feed});
+            return rep.send({ message: profile.data , posts : posts.data.feed});
         }else {
-          return resp.send({url : 'http://127.0.0.1:3001/login'});
+          //return rep.send({url : 'http://127.0.0.1:3001/login'});
+          return rep.send({ redirect: 'http://127.0.0.1:3001/login' });
+        }
+      });
+
+      fastify.post<{Body: {postUri: string, postCid: string}; Reply:{message: string}}>('/postlike', async(req,rep) => {  
+        const { postUri, postCid } = req.body;
+        const agent = await getSessionAgent(req, rep, oauthClient);
+        if (!agent) {
+          return rep.status(401).send({ message: 'Unauthorized. Please log in.' });
+        }
+        try {
+          await agent.like(postUri,postCid);
+          return rep.send({ message: 'Post liked' });
+        } catch (error) {
+          return rep.status(500).send({ message: 'Failed to like post' });
         }
       });
       

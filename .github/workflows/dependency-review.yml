@@ -1,6 +1,6 @@
 name: 'Dependency review'
 on:
-  pull_request:
+  push:
     branches: [ "prod" ]
     paths:
       - 'frontend/package.json'

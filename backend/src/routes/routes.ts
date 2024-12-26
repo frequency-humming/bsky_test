@@ -27,6 +27,26 @@ export default async function routes(fastify: FastifyInstance,
         }
       });
 
+      fastify.get<{Querystring: TimelineQuery}>('/api/profile/user', async (req, resp) => {
+        const agent = await getSessionAgent(req, resp, oauthClient);
+        const { handle } = req.query;  // Get handle from query params
+        
+        if (!agent) {
+          return resp.send({url: 'http://127.0.0.1:3000/login'});
+        }
+      
+        try {
+          if(typeof handle === 'string' && handle.length > 0){
+            const profile = await agent.getProfile({ actor: handle });
+            const posts = await agent.getAuthorFeed({ actor: handle });
+            return resp.send({ message: profile.data, posts: posts.data.feed });
+          }
+        } catch (error) {
+          fastify.log.error(error);
+          return resp.status(500).send({ error: 'Failed to fetch user profile' });
+        }
+      });
+
       fastify.post<{Body: {postUri: string, postCid: string}; Reply:{message: string}}>('/api/postlike', async(req,rep) => {  
         const { postUri, postCid } = req.body;
         const agent = await getSessionAgent(req, rep, oauthClient);
@@ -54,7 +74,7 @@ export default async function routes(fastify: FastifyInstance,
         return { message: post.uri };
       })
       
-      fastify.post<{Body: {handle:string}; Reply:{message: string}}>('/api/login', async(request,reply)=> {
+      fastify.post<{Body: {handle:string}; Reply:{message: string} | {redirect: string}}>('/api/login', async(request,reply)=> {
         const handle = request.body?.handle;
             if (typeof handle !== 'string' || !isValidHandle(handle)) {
               return reply.send({ message: 'invalid handle' })
@@ -64,7 +84,7 @@ export default async function routes(fastify: FastifyInstance,
               const url = await oauthClient.authorize(handle, {
                 scope: 'atproto transition:generic',
               })
-              return reply.send({message:url.toString()});
+              return reply.send({redirect:url.toString()});
             } catch (err) {
               return reply.send({message:'oauth authorize failed'});
             }
@@ -101,7 +121,7 @@ export default async function routes(fastify: FastifyInstance,
         const agent = await getSessionAgent(req, rep, oauthClient);
         if (!agent) {
           req.log.info('Unauthorized access to /api/timeline');
-          return rep.status(401).send({ error: 'Unauthorized. Please log in.' });
+          return rep.send({ error: 'http://127.0.0.1:3000/login' });
         }
         try {
           const { cursor = "" } = req.query;

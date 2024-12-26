@@ -7,6 +7,7 @@ import { createBidirectionalResolver, createClient, createIdResolver } from './c
 import routes from './routes/routes.js';
 import fastifyWebsocket from '@fastify/websocket';
 import path from 'path';
+import { normalize, join } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
@@ -48,7 +49,7 @@ fastify.register(async function(fastify) {
 
 // Register static file serving
 fastify.register(async function(fastify) {
-  // Serve Next.js static files
+  
   const staticPath = path.join(__dirname, '../../frontend/.next/static');
   if (fs.existsSync(staticPath)) {
     fastify.register(fastifyStatic, {
@@ -75,31 +76,31 @@ fastify.register(async function(fastify) {
 
   fastify.get('/*', async (request, reply) => {
     const url = request.url === '/' ? '/index' : request.url;
-    const htmlPath = path.join(pagesDir, `${url}.html`);
-    
+ 
     try {
-      if (fs.existsSync(htmlPath)) {
-        const stream = fs.createReadStream(htmlPath);
+
+      const requestUrl = request.url === '/' ? '/index' : request.url;
+      const normalizedUrl = normalize(requestUrl).replace(/^(\.\.(\/|\\|$))+/, '');
+      const safePath = join(pagesDir, `${normalizedUrl}.html`);
+
+      if (!safePath.startsWith(pagesDir)) {
+        reply.code(403).send('Forbidden');
+        return;
+      }
+
+      if (fs.existsSync(safePath)) {
+        const stream = fs.createReadStream(safePath);
         reply.type('text/html');
         return reply.send(stream);
       } else {
         // Try to find index.html in the requested directory
-        const indexPath = path.join(pagesDir, url, 'index.html');
-        if (fs.existsSync(indexPath)) {
+        const indexPath = join(pagesDir, normalizedUrl, 'index.html');
+        if (fs.existsSync(indexPath) && indexPath.startsWith(pagesDir)) {
           const stream = fs.createReadStream(indexPath);
           reply.type('text/html');
           return reply.send(stream);
         }
-      }
-      
-      // If no specific page is found, serve the main index.html
-      const fallbackPath = path.join(pagesDir, 'index.html');
-      if (fs.existsSync(fallbackPath)) {
-        const stream = fs.createReadStream(fallbackPath);
-        reply.type('text/html');
-        return reply.send(stream);
-      }
-      
+      }   
       reply.code(404).send('Page not found');
     } catch (err) {
       reply.code(500).send('Internal Server Error');

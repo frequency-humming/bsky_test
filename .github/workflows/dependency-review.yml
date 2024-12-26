@@ -1,21 +1,26 @@
-name: 'Dependency review'
+name: 'Dependency Review'
 on:
+  pull_request:
+    branches: [ "prod" ]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/yarn.lock'
   push:
     branches: [ "prod" ]
     paths:
-      - 'frontend/package.json'
-      - 'frontend/package-lock.json'
-      - 'frontend/yarn.lock'
-      - 'backend/package.json'
-      - 'backend/package-lock.json'
-      - 'backend/yarn.lock'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/yarn.lock'
 
 permissions:
   contents: read
   pull-requests: write
+  security-events: write
 
 jobs:
-  dependency-review:
+  pull-request-review:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout repository'
@@ -37,9 +42,39 @@ jobs:
           base-ref: ${{ github.event.pull_request.base.sha }}
           head-ref: ${{ github.event.pull_request.head.sha }}
 
-      # Optional: Add vulnerability scanning thresholds
-      # You can uncomment and modify these as needed
-      # with:
-      #   fail-on-severity: moderate
-      #   deny-licenses: GPL-1.0-or-later, LGPL-2.0-or-later
-      #   retry-on-snapshot-warnings: true
+  push-audit:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Backend Audit
+        working-directory: backend
+        run: |
+          npm install
+          npm audit
+
+      - name: Frontend Audit
+        working-directory: frontend
+        run: |
+          npm install
+          npm audit
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-projects
+
+      # Optional: Submit the results to GitHub's dependency graph
+      - name: Upload dependency snapshot
+        uses: advanced-security/maven-dependency-submission-action@v3
+        with:
+          directory: .

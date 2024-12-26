@@ -61,7 +61,6 @@ export default async function routes(fastify: FastifyInstance,
               return reply.send({ message: 'invalid handle' })
             }
             // Initiate the OAuth flow
-            console.log("11111111111111 -> in oauth");
             try {
               const url = await oauthClient.authorize(handle, {
                 scope: 'atproto transition:generic',
@@ -73,7 +72,6 @@ export default async function routes(fastify: FastifyInstance,
       })
       
       fastify.get('/oauth/callback', async (req, rep) => {
-        console.log("222222222222222222 -> in callback");
         const params = new URLSearchParams(req.raw.url?.split('?')[1] || '');
         try {
           const { session } = await oauthClient.callback(params);

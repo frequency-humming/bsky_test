@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Login() {
   const [handle, setHandle] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent default form submission behavior
@@ -16,7 +18,7 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ handle }), // Send the handle in the request body
+        body: JSON.stringify({ handle }),
       });
 
       if (!response.ok) {
@@ -25,10 +27,10 @@ export default function Login() {
       }
 
       const data = await response.json();
-      setSuccess('Redirecting to: ' + data.url);
+      setSuccess('Redirecting to: ' + data.message);
 
         // Redirect the user to the OAuth URL
-        window.location.href = data.message;
+        router.push(data.redirect);
     } catch (error) {
         console.log("in error client");
         setError(error+' An error occurred during login');

@@ -55,7 +55,7 @@ export default async function routes(fastify: FastifyInstance,
         return { message: post.uri };
       })
       
-      fastify.post<{Body: {handle:string}; Reply:{message: string}}>('/login', async(request,reply)=> {
+      fastify.post<{Body: {handle:string}; Reply:{message: string} | {redirect: string}}>('/login', async(request,reply)=> {
         const handle = request.body?.handle;
             if (typeof handle !== 'string' || !isValidHandle(handle)) {
               return reply.send({ message: 'invalid handle' })
@@ -66,7 +66,7 @@ export default async function routes(fastify: FastifyInstance,
               const url = await oauthClient.authorize(handle, {
                 scope: 'atproto transition:generic',
               })
-              return reply.send({message:url.toString()});
+              return reply.send({redirect:url.toString()});
             } catch (err) {
               return reply.send({message:'oauth authorize failed'});
             }

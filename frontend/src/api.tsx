@@ -1,10 +1,11 @@
-import { PostWrapper , Profile, TimelineResponse} from '../types';
+import { PostWrapper , Profile} from '../types';
 let cursor:string | null = "";
 
 const fetchTimeline = async () => {
 
   let posts:PostWrapper[] = [];
   let error;
+  let redirect;
 
       try {
         const response = await fetch('/api/timeline?cursor='+cursor, {
@@ -12,17 +13,21 @@ const fetchTimeline = async () => {
           credentials: 'include', // cookies
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch timeline client');
+          throw new Error('Failed to fetch timeline');
         }
-        const data: TimelineResponse = await response.json();
-        console.log(cursor);
-        posts = data.feed;
-        cursor = data.cursor;
+        const data = await response.json();
+        if(data.redirect){
+          redirect=data.redirect;
+        }else{
+          console.log(cursor);
+          posts = data.feed;
+          cursor = data.cursor;
+          error = data.error;
+        }     
       } catch (err) {
         error = 'An error occurred : '+ err;
       }
-
-  return {posts,cursor,error};
+  return {posts,cursor,error,redirect};
 }
 
 const fetchProfile = async () => {
@@ -48,6 +53,31 @@ const fetchProfile = async () => {
   return {profile, feed, error, redirect};
 };
 
+const fetchUserProfile = async (handle:string) => {
+  let profile:Profile | undefined;
+  let feed:PostWrapper[] = [];
+  let url:string = '';
+  let error:string = '';
+  try {
+    const response = await fetch('/api/profile/user?handle='+handle, {
+      method: 'GET',
+      credentials: 'include', // cookies
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch timeline client');
+    }
+    const data = await response.json();
+    url = data.url;
+    if(data.message){
+      profile=data.message;
+    }   
+    feed=data.posts;
+  } catch (err) {
+    error = 'Error fetching data '+err;
+  }
+  return {profile, feed, error, url};
+};
+
 const postLike = async (postUri: string, postCid: string) => {
   try{
   const response = await fetch("/api/postlike", {
@@ -71,5 +101,5 @@ const postLike = async (postUri: string, postCid: string) => {
   }
 };
 
-export {fetchProfile, fetchTimeline, postLike};
+export {fetchProfile,fetchUserProfile, fetchTimeline, postLike};
 

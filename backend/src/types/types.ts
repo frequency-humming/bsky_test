@@ -4,6 +4,7 @@ import { IdResolver } from '@atproto/identity';
 
 export interface TimelineQuery {
   cursor?: string;
+  handle?: string;
 }
 
 export type Session = { 

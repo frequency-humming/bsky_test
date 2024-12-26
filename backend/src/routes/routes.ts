@@ -28,6 +28,26 @@ export default async function routes(fastify: FastifyInstance,
         }
       });
 
+      fastify.get<{Querystring: TimelineQuery}>('/profile/user', async (req, resp) => {
+        const agent = await getSessionAgent(req, resp, oauthClient);
+        const { handle } = req.query;  // Get handle from query params
+        
+        if (!agent) {
+          return resp.send({url: 'http://127.0.0.1:3001/login'});
+        }
+      
+        try {
+          if(typeof handle === 'string' && handle.length > 0){
+            const profile = await agent.getProfile({ actor: handle });
+            const posts = await agent.getAuthorFeed({ actor: handle });
+            return resp.send({ message: profile.data, posts: posts.data.feed });
+          }
+        } catch (error) {
+          fastify.log.error(error);
+          return resp.status(500).send({ error: 'Failed to fetch user profile' });
+        }
+      });
+
       fastify.post<{Body: {postUri: string, postCid: string}; Reply:{message: string}}>('/postlike', async(req,rep) => {  
         const { postUri, postCid } = req.body;
         const agent = await getSessionAgent(req, rep, oauthClient);
@@ -102,7 +122,7 @@ export default async function routes(fastify: FastifyInstance,
         const agent = await getSessionAgent(req, rep, oauthClient);
         if (!agent) {
           req.log.info('Unauthorized access to /api/timeline');
-          return rep.status(401).send({ error: 'Unauthorized. Please log in.' });
+          return rep.send({ redirect: 'http://127.0.0.1:3001/login' });
         }
         try {
           const { cursor = "" } = req.query;

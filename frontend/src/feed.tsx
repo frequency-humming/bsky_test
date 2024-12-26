@@ -4,12 +4,15 @@ import { PostWrapper} from '../types';
 import { useEffect, useState } from 'react';
 import { RepostIcon, LikeIcon } from './icons';
 import DOMPurify from 'dompurify';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function Feed() {
   const [error, setError] = useState<string>();
   const [posts, setPosts] = useState<PostWrapper[]>([]);
   const [page, setPage] = useState(1);
   const [showDiv, setDiv] = useState(false);
+  const router = useRouter();
   // Track liked posts with a Map
   const [likedPosts, setLikedPosts] = useState<Map<string, boolean>>(new Map());
   // Track like counts separately
@@ -18,16 +21,23 @@ export default function Feed() {
   useEffect(() => {
     const timeline = async () => {
     const data = await fetchTimeline();
+    if(data.error){
+      setError(data.error);
+      return;
+    }
+    if(data.redirect){
+      router.push(data.redirect);
+    }
     setPosts(data.posts);
     const initialCounts = new Map();
       data.posts.forEach(record => {
         initialCounts.set(record.post.uri, record.post.likeCount);
       });
       setLikeCounts(initialCounts);
-    setError(data.error);
     }
     timeline();
-  },[])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   const handleIntersect = (entries: IntersectionObserverEntry[]) => {
     if (entries[0].isIntersecting && showDiv) {
@@ -126,7 +136,13 @@ export default function Feed() {
                 return (
                     <div key={index} className="mb-5 border border-gray-300 p-4 flex flex-col items-center text-center">
                         <img src={avatarUrl} alt="avatar" className="w-12 h-12 rounded-full" width={150} height={150}/>
-                        <h3 className="mt-2 text-gray-500 font-bold">{data.author.displayName} - {data.author.handle}</h3>
+                        <br></br>
+                        <p>{data.author.viewer?.following ? "Following":"Not Following"}</p>
+                        <h3 className="mt-2 text-gray-500 font-bold">
+                          <Link href={`/profile/${data.author.handle}`}>
+                            {data.author.displayName} - {data.author.handle}
+                          </Link>
+                        </h3>
                         <p className="mt-1 text-gray-100">{data.record.text}</p>
                         <div>
                         {data.embed?.images?.map((image, index) => (   

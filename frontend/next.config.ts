@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.bsky.app',
       },
+      {
+        protocol: 'https',
+        hostname: 'video.bsky.app',
+      }
     ],
   },
   async rewrites() {

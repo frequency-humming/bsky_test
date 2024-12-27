@@ -6,6 +6,7 @@ import { RepostIcon, LikeIcon } from './icons';
 import DOMPurify from 'dompurify';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import VideoPlayer from './videoplayer';
 
 export default function Feed() {
   const [error, setError] = useState<string>();
@@ -115,7 +116,7 @@ export default function Feed() {
   };
 
   const sanitizeUrl = (url: string) => {
-    if (!url.startsWith('https://')) {
+    if ( !url || !url.startsWith('https://')) {
       return '';
     }
     return DOMPurify.sanitize(url);
@@ -180,6 +181,9 @@ export default function Feed() {
                                         />  
                                     </div>
                                 </div>
+                            }
+                            {data.embed?.$type && data.embed.$type === 'app.bsky.embed.video#view' &&
+                              <VideoPlayer playlist={data.embed.playlist} thumbnail={data.embed.thumbnail}/>
                             }
                         </div>
                         <div className="flex items-center justify-center">

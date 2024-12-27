@@ -16,12 +16,13 @@ const fetchTimeline = async () => {
           throw new Error('Failed to fetch timeline');
         }
         const data = await response.json();
-        if(data.error){
-          redirect=data.error;
+        if(data.redirect){
+          redirect=data.redirect;
         }else{
           console.log(cursor);
           posts = data.feed;
           cursor = data.cursor;
+          error = data.error;
         }     
       } catch (err) {
         error = 'An error occurred : '+ err;

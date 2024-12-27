@@ -121,7 +121,7 @@ export default async function routes(fastify: FastifyInstance,
         const agent = await getSessionAgent(req, rep, oauthClient);
         if (!agent) {
           req.log.info('Unauthorized access to /api/timeline');
-          return rep.send({ error: 'http://127.0.0.1:3000/login' });
+          return rep.send({ redirect: 'http://127.0.0.1:3000/login' });
         }
         try {
           const { cursor = "" } = req.query;

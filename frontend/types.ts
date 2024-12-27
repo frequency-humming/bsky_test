@@ -31,6 +31,8 @@ interface Embed {
   $type: string; // Type identifier, e.g., "app.bsky.embed.images#view"
   images: EmbedImage[];
   external: ExternalContent;
+  playlist: string;
+  thumbnail: string;
 }
 
 export interface Post {

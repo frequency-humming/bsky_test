@@ -18,20 +18,21 @@ export default async function routes(fastify: FastifyInstance,
       fastify.get<{Querystring: TimelineQuery}>('/api/profile/user', async (req, resp) => {
         const agent = await getSessionAgent(req, resp, oauthClient);
         const { handle } = req.query;  // Get handle from query params
-        
+                
         if (!agent) {
           return resp.send({url: 'http://127.0.0.1:3000/login'});
         }
       
         try {
+          const did = agent.did;
           if(handle && handle.length > 0 && handle != "agent" ){
             const profile = await agent.getProfile({ actor: handle });
             const posts = await agent.getAuthorFeed({ actor: handle });
-            return resp.send({ message: profile.data, posts: posts.data.feed });
+            return resp.send({ message: profile.data, posts: posts.data.feed, did: did });
           }else if (agent && agent.did && handle === "agent"){
             const profile = await agent.getProfile({ actor: agent.did });
             const posts = await agent.getAuthorFeed({ actor: agent.did });
-            return resp.send({ message: profile.data , posts : posts.data.feed});
+            return resp.send({ message: profile.data , posts : posts.data.feed, did: did});
           }
         } catch (error) {
           fastify.log.error(error);
@@ -48,6 +49,20 @@ export default async function routes(fastify: FastifyInstance,
         try {
           await agent.like(postUri,postCid);
           return rep.send({ message: 'Post liked' });
+        } catch (error) {
+          return rep.status(500).send({ message: 'Failed to like post' });
+        }
+      });
+
+      fastify.post<{Body: {follow: string}; Reply:{message: string}}>('/api/follow', async(req,rep) => {  
+        const { follow } = req.body;
+        const agent = await getSessionAgent(req, rep, oauthClient);
+        if (!agent) {
+          return rep.status(401).send({ message: 'Unauthorized. Please log in.' });
+        }
+        try {
+          await agent.follow(follow);
+          return rep.send({ message: 'User Followed' });
         } catch (error) {
           return rep.status(500).send({ message: 'Failed to like post' });
         }
@@ -108,14 +123,16 @@ export default async function routes(fastify: FastifyInstance,
         return rep.redirect('http://127.0.0.1:3000/login');
       });
       
-      fastify.get<{Querystring: TimelineQuery}>('/api/timeline',async(req, rep):Promise<{ feed: FeedViewPost[]; cursor: string | undefined }> => {
+      fastify.get<{Querystring: TimelineQuery}>('/api/timeline',async(req, rep):Promise<{ feed: FeedViewPost[]; cursor: string | undefined;did:string | undefined }> => {
         
         const agent = await getSessionAgent(req, rep, oauthClient);
+        
         if (!agent) {
           req.log.info('Unauthorized access to /api/timeline');
           return rep.send({ redirect: 'http://127.0.0.1:3000/login' });
         }
         try {
+          const did = agent.did;
           const { cursor = "" } = req.query;
           console.log("in server, cursor:", cursor);
           const { data } = await agent.getTimeline({
@@ -125,7 +142,7 @@ export default async function routes(fastify: FastifyInstance,
           //console.log(JSON.stringify(data));
           const { feed: postsArray, cursor: nextPage } = data;
           
-          return {feed:postsArray,cursor: nextPage}; 
+          return {feed:postsArray,cursor: nextPage, did: did}; 
         } catch (error) {
           return rep.status(500).send({ error: 'Failed to fetch timeline internal' });
         }

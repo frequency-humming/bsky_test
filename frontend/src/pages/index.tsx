@@ -14,6 +14,7 @@ const Home: NextPage = () => {
   const [post, setPost] = useState<string>();
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState<string>('');
+  const [did, setDid] = useState<string>();
   const router = useRouter();
   const handle:string = "agent";
 
@@ -30,6 +31,7 @@ const Home: NextPage = () => {
         }
         if(data.url){
           router.push(data.url);
+          return;
         }
         //setProfile(() => data.profile);
         if(data.profile && post){
@@ -38,6 +40,7 @@ const Home: NextPage = () => {
           setProfile(data.profile);
         }     
         setFeed(data.feed);
+        setDid(data.did);  
       } catch (error) {
         setError('Error fetching data '+error);
       }
@@ -97,7 +100,9 @@ const Home: NextPage = () => {
         {post && <p className="mt-6 p-2">Post created: {post}</p>}
       </div>}
       <br></br>
-      <ProfilePost posts={feed} />
+      {feed && did &&
+        <ProfilePost posts={feed} did={did}/>
+      }
     </div>
   );
 };

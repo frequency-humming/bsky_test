@@ -1,16 +1,18 @@
 /* eslint-disable @next/next/no-img-element */
 import type { PostWrapper } from '../types/types';
 import { useState } from 'react';
-import { postLike } from '@/api';
+import { postLike, postFollow } from '@/api';
 import { RepostIcon, LikeIcon } from './icons';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import VideoPlayer from './videoPlayer';
 
-const ProfilePost = ({ posts }: { posts: PostWrapper[] }) => {
+const ProfilePost = ({ posts, did }: { posts: PostWrapper[], did:string }) => {
 
     const [likedPosts, setLikedPosts] = useState<Map<string, boolean>>(new Map());
     const [likeCounts, setLikeCounts] = useState<Map<string, number>>(new Map());
+    const [followingStatus, setFollowingStatus] = useState<Map<string, boolean>>(new Map());
+    const userDid = did;
 
     const handleLikeClick = async (params: { postUri: string; postCid: string , count:number}) => {
         const { postUri, postCid , count} = params;
@@ -46,6 +48,23 @@ const ProfilePost = ({ posts }: { posts: PostWrapper[] }) => {
         }
         return DOMPurify.sanitize(url);
       };
+      const handleFollow = async (follow:string, val:string | undefined) => {
+        if(val){
+          console.log('Already following');
+          return;
+        }
+        try {
+          const data = await postFollow(follow);
+          console.log('Follow data:', data);
+          setFollowingStatus(prev => {
+            const newMap = new Map(prev);
+            newMap.set(follow, true);
+            return newMap;
+          });
+        }catch (error) {
+          console.error('Follow error:', error);
+        }
+      };
 
 return (
     <div>
@@ -54,11 +73,16 @@ return (
         const isLiked = likedPosts.get(data.uri);
         const currentLikeCount = likeCounts.get(data.uri) || data.likeCount;
         const avatarUrl = sanitizeUrl(data.author.avatar);
+        const follow = data.author.did.split('/app.bsky.feed.post/')[0];
+        const isFollowing = followingStatus.get(follow) || data.author.viewer?.following;
         return (
             <div key={index} className="mb-5 border border-gray-300 p-4 flex flex-col items-center text-center">
                 <img src={avatarUrl} alt="avatar" className="w-12 h-12 rounded-full" width={150} height={150}/>
                 <br></br>
-                <p>{data.author.viewer?.following ? "Following":"Not Following"}</p>
+                {follow != userDid && 
+                  <p onClick={() => handleFollow(follow, data.author.viewer?.following)}
+                    className="cursor-pointer hover:text-blue-500">{isFollowing ? "Following" : "Not Following"}</p>
+                }
                 <h3 className="mt-2 text-gray-500 font-bold">
                   <Link href={`/profile/${data.author.handle}`}>
                     {data.author.displayName} - {data.author.handle}
@@ -103,10 +127,10 @@ return (
                             </div>}
                         </div>
                     }
-                    {data.embed?.$type && data.embed.$type === 'app.bsky.embed.video#view' &&
+                    {data.embed?.$type && data.embed.$type === 'app.bsky.embed.video#view' && data.embed.playlist &&(
                       <VideoPlayer playlist={data.embed.playlist} aspectRatio={data.embed.aspectRatio}
                       thumbnail={data.embed.thumbnail} />
-                    }
+                    )}
                 </div>
                 <div className="flex items-center justify-center">
                   <RepostIcon/>

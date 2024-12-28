@@ -12,20 +12,26 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ playlist, thumbnail, aspectRa
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    // Add check for playlist existence
+    if (!video || !playlist) return;
+
+    let hls: Hls | null = null;
 
     if (Hls.isSupported()) {
-      const hls = new Hls();
+      hls = new Hls();
       hls.loadSource(playlist);
       hls.attachMedia(video);
-      return () => {
-        hls.destroy();
-      };
     }
     else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = playlist;
     }
-  }, [playlist]);
+
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
+  }, [playlist]); // Keep playlist in dependencies array
 
   const containerStyle = {
     position: 'relative' as const,
@@ -33,6 +39,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ playlist, thumbnail, aspectRa
     maxWidth: '600px',
     aspectRatio: aspectRatio ? `${aspectRatio.width}/${aspectRatio.height}` : '16/9'
   };
+
+  // Add check for playlist before rendering
+  if (!playlist) return null;
 
   return (
     <div style={containerStyle} className="overflow-hidden">

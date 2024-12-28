@@ -1,4 +1,4 @@
-import { PostWrapper , Profile} from '../types';
+import { PostWrapper , Profile } from './types/types';
 let cursor:string | null = "";
 
 const fetchTimeline = async () => {
@@ -29,29 +29,6 @@ const fetchTimeline = async () => {
       }
   return {posts,cursor,error,redirect};
 }
-
-const fetchProfile = async () => {
-  let profile:Profile | null = null;
-  let feed:PostWrapper[] = [];
-  let redirect:string = '';
-  let error:string = '';
-  try {
-    const response = await fetch('/api/profile', {
-      method: 'GET',
-      credentials: 'include', // cookies
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch timeline client');
-    }
-    const data = await response.json();
-    redirect = data.redirect;
-    profile=data.message;
-    feed=data.posts;
-  } catch (err) {
-    error = 'Error fetching data '+err;
-  }
-  return {profile, feed, error, redirect};
-};
 
 const fetchUserProfile = async (handle:string) => {
   let profile:Profile | undefined;
@@ -101,5 +78,5 @@ const postLike = async (postUri: string, postCid: string) => {
   }
 };
 
-export {fetchProfile,fetchUserProfile, fetchTimeline, postLike};
+export {fetchUserProfile, fetchTimeline, postLike};
 

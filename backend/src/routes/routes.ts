@@ -15,32 +15,22 @@ let eventEmitter:any;
 export default async function routes(fastify: FastifyInstance,
     { oauthClient,db,baseIdResolver,resolver}: RouteDependencies){
 
-    fastify.get('/profile',async (req,rep) => {
-        const agent = await getSessionAgent(req, rep, oauthClient);
-        if (agent && agent.did) {
-            fastify.log.info("agent : "+agent.did);
-            const profile = await agent.getProfile({ actor: agent.did });
-            const posts = await agent.getAuthorFeed({ actor: agent.did });
-            return rep.send({ message: profile.data , posts : posts.data.feed});
-        }else {
-          //return rep.send({url : 'http://127.0.0.1:3001/login'});
-          return rep.send({ redirect: 'http://127.0.0.1:3001/login' });
-        }
-      });
-
       fastify.get<{Querystring: TimelineQuery}>('/profile/user', async (req, resp) => {
         const agent = await getSessionAgent(req, resp, oauthClient);
         const { handle } = req.query;  // Get handle from query params
         
         if (!agent) {
           return resp.send({url: 'http://127.0.0.1:3001/login'});
-        }
-      
+        }  
         try {
-          if(typeof handle === 'string' && handle.length > 0){
+          if(handle && handle.length > 0 && handle != "agent" ){
             const profile = await agent.getProfile({ actor: handle });
             const posts = await agent.getAuthorFeed({ actor: handle });
             return resp.send({ message: profile.data, posts: posts.data.feed });
+          }else if (agent && agent.did && handle === "agent"){
+            const profile = await agent.getProfile({ actor: agent.did });
+            const posts = await agent.getAuthorFeed({ actor: agent.did });
+            return resp.send({ message: profile.data , posts : posts.data.feed});
           }
         } catch (error) {
           fastify.log.error(error);

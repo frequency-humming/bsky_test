@@ -15,18 +15,6 @@ let eventEmitter:any;
 export default async function routes(fastify: FastifyInstance,
     { oauthClient,db,baseIdResolver,resolver}: RouteDependencies){
 
-    fastify.get('/api/profile',async (req,resp) => {
-        const agent = await getSessionAgent(req, resp, oauthClient);
-        if (agent && agent.did) {
-            fastify.log.info("agent : "+agent.did);
-            const profile = await agent.getProfile({ actor: agent.did });
-            const posts = await agent.getAuthorFeed({ actor: agent.did });
-            return resp.send({ message: profile.data , posts : posts.data.feed});
-        }else {
-          return resp.send({url : 'http://127.0.0.1:3000/login'});
-        }
-      });
-
       fastify.get<{Querystring: TimelineQuery}>('/api/profile/user', async (req, resp) => {
         const agent = await getSessionAgent(req, resp, oauthClient);
         const { handle } = req.query;  // Get handle from query params
@@ -36,10 +24,14 @@ export default async function routes(fastify: FastifyInstance,
         }
       
         try {
-          if(typeof handle === 'string' && handle.length > 0){
+          if(handle && handle.length > 0 && handle != "agent" ){
             const profile = await agent.getProfile({ actor: handle });
             const posts = await agent.getAuthorFeed({ actor: handle });
             return resp.send({ message: profile.data, posts: posts.data.feed });
+          }else if (agent && agent.did && handle === "agent"){
+            const profile = await agent.getProfile({ actor: agent.did });
+            const posts = await agent.getAuthorFeed({ actor: agent.did });
+            return resp.send({ message: profile.data , posts : posts.data.feed});
           }
         } catch (error) {
           fastify.log.error(error);

@@ -33,6 +33,10 @@ interface Embed {
   external: ExternalContent;
   playlist: string;
   thumbnail: string;
+  aspectRatio:{
+    height: number;
+    width: number;
+  }
 }
 
 export interface Post {

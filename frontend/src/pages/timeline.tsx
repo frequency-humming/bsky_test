@@ -1,4 +1,4 @@
-import Feed  from '../feed';
+import Feed  from '../components/feed';
 
 export default function Timeline() {
  

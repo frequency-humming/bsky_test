@@ -12,6 +12,7 @@ export default function Profile() {
   const [profile, setProfile] = useState<Profile>();
   const [posts, setPosts] = useState<PostWrapper[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [did, setDid] = useState<string>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +31,7 @@ export default function Profile() {
         }
         setProfile(data.profile);
         setPosts(data.feed);
+        setDid(data.did);
       } catch (error) {
         setError('Error fetching profile data: ' + error);
       }
@@ -52,7 +54,9 @@ export default function Profile() {
     <div className="p-12 font-mono">
       <ProfileCard profile={profile} />   
       <br></br>
-      <ProfilePost posts={posts} />
+      {posts && did &&
+        <ProfilePost posts={posts} did={did}/>
+      }
     </div>
   );
 }

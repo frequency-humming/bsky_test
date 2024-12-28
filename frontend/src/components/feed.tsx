@@ -10,6 +10,7 @@ export default function Feed() {
   const [posts, setPosts] = useState<PostWrapper[]>([]);
   const [page, setPage] = useState(1);
   const [showDiv, setDiv] = useState(false);
+  const [did, setDid] = useState<string>();
   const router = useRouter();
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function Feed() {
       router.push(data.redirect);
     }
     setPosts(data.posts);
+    setDid(data.did);
     }
     timeline();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,7 +84,9 @@ export default function Feed() {
         <p style={{ color: 'red' }}>{error}</p>
       ) : (
         <div>
-            <ProfilePost posts={posts} />
+          {posts && did &&
+            <ProfilePost posts={posts} did={did}/>
+          }
         </div>
       )}
       {showDiv && <div id="sentinel"></div> }

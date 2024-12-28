@@ -47,8 +47,14 @@ export interface Post {
     handle: string;
     displayName: string;
     avatar: string;
-    associated?: Record<string, unknown>;
-    viewer?: Record<string, unknown>;
+    associated?:{
+      chat:{
+        allowIncoming: string;
+      }
+    }
+    viewer?:{
+      following: string;
+    };
     createdAt: string;
   };
   record: {

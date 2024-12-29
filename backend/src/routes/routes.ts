@@ -16,29 +16,32 @@ let eventEmitter:any;
 export default async function routes(fastify: FastifyInstance,
     { oauthClient,db,baseIdResolver,resolver}: RouteDependencies){
 
-      fastify.get<{Querystring: TimelineQuery}>('/profile/user', async (req, resp) => {
-        const agent = await getSessionAgent(req, resp, oauthClient);
+      fastify.get<{Querystring: TimelineQuery}>('/profile/user', async (req, reply) => {
+        const agent = await getSessionAgent(req, reply, oauthClient);
         const { handle } = req.query;  // Get handle from query params
-        
+
+        if (handle !== "agent" && (typeof handle !== 'string' || !isValidHandle(handle))) {
+          return reply.send({ error: 'invalid handle' });
+        }
         if (!agent) {
-          return resp.send({url: 'http://127.0.0.1:3001/login'});
+          return reply.send({url: 'http://127.0.0.1:3001/login'});
         }  
         try {
           const did = agent.did;
-          if(handle && handle.length > 0 && handle != "agent" ){
+          if(handle && handle.length > 0 && handle !== "agent" ){
             const profile = await agent.getProfile({ actor: handle });
             const postsArray = await agent.getAuthorFeed({ actor: handle });
             const posts:TimelineResponse = addScore(postsArray.data.feed);
-            return resp.send({ message: profile.data, posts: posts,did: did });
+            return reply.send({ message: profile.data, posts: posts,did: did });
           }else if (agent && agent.did && handle === "agent"){
             const profile = await agent.getProfile({ actor: agent.did });
             const postsArray = await agent.getAuthorFeed({ actor: agent.did });
             const posts:TimelineResponse = addScore(postsArray.data.feed);
-            return resp.send({ message: profile.data , posts : posts, did: did});
+            return reply.send({ message: profile.data , posts : posts, did: did});
           }
         } catch (error) {
           fastify.log.error(error);
-          return resp.status(500).send({ error: 'Failed to fetch user profile' });
+          return reply.status(500).send({ error: 'Failed to fetch user profile' });
         }
       });
 

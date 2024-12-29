@@ -30,11 +30,9 @@ export default function Network() {
   return (
     <div>
       <h1>Real-Time Events</h1>
-      <ul>
         {events.map((event, index) => (
-          <li key={index}>{event}</li>
+          <h1 key={index}>{event}</h1>
         ))}
-      </ul>
     </div>
   );
 }

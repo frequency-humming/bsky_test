@@ -75,6 +75,7 @@ export interface Post {
   indexedAt: string;
   viewer?: Record<string, unknown>;
   labels?: unknown[];
+  score?: number;
 }
 
 export interface PostWrapper {

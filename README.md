@@ -7,3 +7,13 @@
     
     network -> all created posts based on language (no login needed)  
 
+   # sentiment analysis of posts for the following pages 
+   
+      timeline, 
+      
+      index, 
+      
+      handler , 
+      
+      network
+

@@ -65,6 +65,15 @@ const ProfilePost = ({ posts, did }: { posts: PostWrapper[], did:string }) => {
           console.error('Follow error:', error);
         }
       };
+      const getScoreGrade = (score: number): { grade: string; color: string } => {
+        if (score >= 0.6) return { grade: 'A+', color: 'text-green-500' };
+        if (score >= 0.3) return { grade: 'A', color: 'text-green-400' };
+        if (score >= 0.1) return { grade: 'B+', color: 'text-blue-500' };
+        if (score >= 0) return { grade: 'B', color: 'text-blue-400' };
+        if (score >= -0.2) return { grade: 'C', color: 'text-yellow-500' };
+        if (score >= -0.4) return { grade: 'D', color: 'text-orange-500' };
+        return { grade: 'F', color: 'text-red-500' };
+    };
 
 return (
     <div>
@@ -89,6 +98,15 @@ return (
                   </Link>
                 </h3>
                 <p className="mt-1 text-gray-100">{data.record.text}</p>
+                <p className="mt-1 text-red-100">{data.score}</p>
+                {typeof data.score === 'number' && (
+                  <div className="mt-2 flex items-center gap-2">
+                      <span className="text-gray-400 text-sm">Sentiment Grade:</span>
+                      <span className={`font-bold text-lg ${getScoreGrade(data.score).color}`}>
+                          {getScoreGrade(data.score).grade}
+                      </span>
+                  </div>
+                )}
                 <div>
                 {data.embed?.images?.map((image, index) => (   
                     <div key={index} className="mt-4">

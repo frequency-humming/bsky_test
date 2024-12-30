@@ -1,11 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 import type { PostWrapper } from '../types/types';
 import { useState } from 'react';
-import { postLike, postFollow } from '@/api';
+import { postLike, postFollow } from './../api';
 import { RepostIcon, LikeIcon } from './icons';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import VideoPlayer from './videoPlayer';
+import ReplyCard from './replyCard';
 
 const ProfilePost = ({ posts, did }: { posts: PostWrapper[], did:string }) => {
 
@@ -48,7 +49,7 @@ const ProfilePost = ({ posts, did }: { posts: PostWrapper[], did:string }) => {
         }
         return DOMPurify.sanitize(url);
       };
-      const handleFollow = async (follow:string, val:string | undefined) => {
+      const handleFollow = async (follow:string, val:string|undefined) => {
         if(val){
           console.log('Already following');
           return;
@@ -65,11 +66,21 @@ const ProfilePost = ({ posts, did }: { posts: PostWrapper[], did:string }) => {
           console.error('Follow error:', error);
         }
       };
+      const getScoreGrade = (score: number): { grade: string; color: string } => {
+        if (score >= 0.6) return { grade: 'A+', color: 'text-green-500' };
+        if (score >= 0.3) return { grade: 'A', color: 'text-green-400' };
+        if (score >= 0.1) return { grade: 'B+', color: 'text-blue-500' };
+        if (score >= 0) return { grade: 'B', color: 'text-blue-400' };
+        if (score >= -0.2) return { grade: 'C', color: 'text-yellow-500' };
+        if (score >= -0.4) return { grade: 'D', color: 'text-orange-500' };
+        return { grade: 'F', color: 'text-red-500' };
+    };
 
 return (
     <div>
     {posts.map((postWrapper, index) => {
         const data = postWrapper.post;
+        const reply = postWrapper.reply;
         const isLiked = likedPosts.get(data.uri);
         const currentLikeCount = likeCounts.get(data.uri) || data.likeCount;
         const avatarUrl = sanitizeUrl(data.author.avatar);
@@ -89,18 +100,35 @@ return (
                   </Link>
                 </h3>
                 <p className="mt-1 text-gray-100">{data.record.text}</p>
+                <p className="mt-1 text-red-100">{data.score}</p>
+                {typeof data.score === 'number' && (
+                  <div className="mt-2 flex items-center gap-2">
+                      <span className="text-gray-400 text-sm">Sentiment Grade:</span>
+                      <span className={`font-bold text-lg ${getScoreGrade(data.score).color}`}>
+                          {getScoreGrade(data.score).grade}
+                      </span>
+                  </div>
+                )}
                 <div>
                 {data.embed?.images?.map((image, index) => (   
-                    <div key={index} className="mt-4">
+                  
+                    <div key={index} className={`mt-4 w-full ${
+                      (image.aspectRatio?.width ?? 800) > 1000 
+                          ? 'max-w-4xl' 
+                          : (image.aspectRatio?.width ?? 800) > 600 
+                              ? 'max-w-2xl' 
+                              : 'max-w-xl'
+                    }`}>
+                      <div className="relative w-full" 
+                        style={{ aspectRatio: `${image.aspectRatio?.width ?? 4} / ${image.aspectRatio?.height ?? 3}`}}>
                         <img
-                        src={sanitizeUrl(image.fullsize)}
-                        alt={image.alt || "Embedded image"}
-                        width={400} 
-                        height={0} // Height will be determined by `aspect-[ratio]`
-                        className="rounded-lg aspect-[4/3]"
+                          src={sanitizeUrl(image.fullsize)}
+                          alt={image.alt || "Embedded image"}
+                          className="w-full h-full object-contain rounded-lg"
                         />
+                      </div>
                     </div>
-                    ))}
+                ))}
                 </div>
                 <div>
                     {data.embed?.external && 
@@ -117,13 +145,13 @@ return (
                             <p>{data.embed.external.description}</p>  
                             {data.embed.external.thumb &&
                             <div className="flex justify-center items-center">
-                                <img
-                                src={sanitizeUrl(data.embed.external.thumb)} 
-                                alt={"External image content"}
-                                width={400} 
-                                height={0} // Height will be determined by `aspect-[ratio]`
-                                className="rounded-lg aspect-[4/3]"
-                                />  
+                              <div className="max-w-xl w-full">
+                                  <img
+                                    src={sanitizeUrl(data.embed.external.thumb)} 
+                                    alt="External image content"
+                                    className="w-full max-h-[500px] object-contain rounded-lg"
+                                  />
+                              </div>
                             </div>}
                         </div>
                     }
@@ -132,6 +160,7 @@ return (
                       thumbnail={data.embed.thumbnail} />
                     )}
                 </div>
+                { data.record?.reply && <ReplyCard reply={reply} /> }
                 <div className="flex items-center justify-center">
                   <RepostIcon/>
                   <p className="p-2">{data.repostCount}</p> 

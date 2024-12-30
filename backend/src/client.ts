@@ -9,6 +9,7 @@ import { IdResolver, MemoryCache } from '@atproto/identity';
 import { Firehose } from '@atproto/sync';
 import type {Session} from './types/types.js';
 import { EventEmitter } from 'events';
+import { processEvent } from './analyzer.js';
 
 const HOUR = 60e3 * 60;
 const DAY = HOUR * 24;
@@ -67,7 +68,8 @@ export function createIngester(db: Database, idResolver: IdResolver) {
     handleEvent: async (evt) => {
       if (evt.event === 'create' && evt.record.text && evt.record.langs && (evt.record.langs as string[]).includes('en')) {
         //console.log("In WebSocket: ", JSON.stringify(evt));
-        eventEmitter.emit('event', JSON.stringify(evt.record.text)); // Emit event to listeners
+        const text = processEvent(evt.record.text as string);
+        eventEmitter.emit('event', JSON.stringify(text)); // Emit event to listeners
       }
     },
     onError: (err) => {

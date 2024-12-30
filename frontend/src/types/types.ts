@@ -39,32 +39,66 @@ interface Embed {
   }
 }
 
+interface Author{
+  did: string;
+  handle: string;
+  displayName: string;
+  avatar: string;
+  associated?:{
+    chat:{
+      allowIncoming: string;
+    }
+  }
+  viewer?:{
+    following: string;
+  };
+  createdAt: string;
+}
+
+interface Records{
+  $type: string;
+  createdAt: string;
+  langs?: string[];
+  text: string;
+}
+
+interface Reply{
+  parent: {
+    $type: string;
+    uri: string;
+    cid: string;
+    author: Author;
+    record: Records;
+    embed?: Embed;
+  };
+  root: {
+    $type: string;
+    uri: string;
+    cid: string;
+    author: Author;
+    record: Records;
+    embed?: Embed;
+  }
+}
+
 export interface Post {
   uri: string;
   cid: string;
-  author: {
-    did: string;
-    handle: string;
-    displayName: string;
-    avatar: string;
-    associated?:{
-      chat:{
-        allowIncoming: string;
-      }
-    }
-    viewer?:{
-      following: string;
-    };
-    createdAt: string;
-  };
+  author: Author;
   record: {
     $type: string;
     createdAt: string;
     langs?: string[];
     text: string;
     reply?: {
-      parent: Record<string, unknown>;
-      root: Record<string, unknown>;
+      parent: {
+        uri: string;
+        cid: string;
+      };
+      root: {
+        uri: string;
+        cid: string;
+      }
     };
   };
   embed?:Embed;
@@ -75,10 +109,12 @@ export interface Post {
   indexedAt: string;
   viewer?: Record<string, unknown>;
   labels?: unknown[];
+  score?: number;
 }
 
 export interface PostWrapper {
   post: Post;
+  reply: Reply;
 }
 
 export interface TimelineResponse {

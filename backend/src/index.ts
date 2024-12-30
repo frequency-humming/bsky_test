@@ -7,7 +7,7 @@ import routes from './routes/routes.js';
 import fastifyWebsocket from '@fastify/websocket';
 
 
-const fastify: FastifyInstance = Fastify({logger: true});
+const fastify: FastifyInstance = Fastify({logger: false});
 fastify.register(fastifyWebsocket);
 
 fastify.register(cors, {

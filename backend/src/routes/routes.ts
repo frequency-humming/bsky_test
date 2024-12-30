@@ -1,12 +1,13 @@
 import {getSessionAgent} from '../client.js';
 import {FastifyInstance} from 'fastify';
 import { getIronSession } from 'iron-session';
-import type { TimelineQuery } from '../types/types.js';
+import type { TimelineQuery,TimelineResponse } from '../types/types.js';
 import { isValidHandle } from '@atproto/syntax';
 import { env } from '../lib/env.js';
 import type {Session, RouteDependencies} from '../types/types.js'
 import { FeedViewPost } from '@atproto/api/dist/client/types/app/bsky/feed/defs.js';
 import {createIngester} from '../client.js';
+import { addScore } from './routeHelper.js';
 
 const activeConnections = new Set<any>(); // Track active connections
 let firehose:any;
@@ -15,28 +16,32 @@ let eventEmitter:any;
 export default async function routes(fastify: FastifyInstance,
     { oauthClient,db,baseIdResolver,resolver}: RouteDependencies){
 
-      fastify.get<{Querystring: TimelineQuery}>('/api/profile/user', async (req, resp) => {
-        const agent = await getSessionAgent(req, resp, oauthClient);
+      fastify.get<{Querystring: TimelineQuery}>('/api/profile/user', async (req, reply) => {
+        const agent = await getSessionAgent(req, reply, oauthClient);
         const { handle } = req.query;  // Get handle from query params
-                
-        if (!agent) {
-          return resp.send({url: 'http://127.0.0.1:3000/login'});
+
+        if (handle !== "agent" && (typeof handle !== 'string' || !isValidHandle(handle))) {
+          return reply.send({ error: 'invalid handle' });
         }
-      
+        if (!agent) {
+          return reply.send({url: 'http://127.0.0.1:3000/login'});
+        }  
         try {
           const did = agent.did;
-          if(handle && handle.length > 0 && handle != "agent" ){
+          if(handle && handle.length > 0 && handle !== "agent" ){
             const profile = await agent.getProfile({ actor: handle });
-            const posts = await agent.getAuthorFeed({ actor: handle });
-            return resp.send({ message: profile.data, posts: posts.data.feed, did: did });
+            const postsArray = await agent.getAuthorFeed({ actor: handle });
+            const posts:TimelineResponse = addScore(postsArray.data.feed);
+            return reply.send({ message: profile.data, posts: posts,did: did });
           }else if (agent && agent.did && handle === "agent"){
             const profile = await agent.getProfile({ actor: agent.did });
-            const posts = await agent.getAuthorFeed({ actor: agent.did });
-            return resp.send({ message: profile.data , posts : posts.data.feed, did: did});
+            const postsArray = await agent.getAuthorFeed({ actor: agent.did });
+            const posts:TimelineResponse = addScore(postsArray.data.feed);
+            return reply.send({ message: profile.data , posts : posts, did: did});
           }
         } catch (error) {
           fastify.log.error(error);
-          return resp.status(500).send({ error: 'Failed to fetch user profile' });
+          return reply.status(500).send({ error: 'Failed to fetch user profile' });
         }
       });
 
@@ -123,13 +128,13 @@ export default async function routes(fastify: FastifyInstance,
         return rep.redirect('http://127.0.0.1:3000/login');
       });
       
-      fastify.get<{Querystring: TimelineQuery}>('/api/timeline',async(req, rep):Promise<{ feed: FeedViewPost[]; cursor: string | undefined;did:string | undefined }> => {
+      fastify.get<{Querystring: TimelineQuery; Reply:{feed: TimelineResponse,cursor: string | undefined, did:string | undefined} | 
+      {redirect: string} | {error:string}}>('/api/timeline',async(req, reply) => {
         
-        const agent = await getSessionAgent(req, rep, oauthClient);
-        
+        const agent = await getSessionAgent(req, reply, oauthClient);
         if (!agent) {
           req.log.info('Unauthorized access to /api/timeline');
-          return rep.send({ redirect: 'http://127.0.0.1:3000/login' });
+          return reply.send({ redirect: 'http://127.0.0.1:3000/login' });
         }
         try {
           const did = agent.did;
@@ -139,12 +144,11 @@ export default async function routes(fastify: FastifyInstance,
             cursor,
             limit: 30,
          });
-          //console.log(JSON.stringify(data));
           const { feed: postsArray, cursor: nextPage } = data;
-          
-          return {feed:postsArray,cursor: nextPage, did: did}; 
+          const posts:TimelineResponse = addScore(postsArray);
+          return reply.send({feed:posts,cursor: nextPage, did: did}); 
         } catch (error) {
-          return rep.status(500).send({ error: 'Failed to fetch timeline internal' });
+          return reply.status(500).send({ error: 'Failed to fetch timeline internal' });
         }
       });
 

@@ -121,3 +121,9 @@ export interface TimelineResponse {
   feed: PostWrapper[];
   cursor: string | null;
 }
+
+export interface ScoreStats {
+  average: number;
+  count: number;
+  total: number;
+}

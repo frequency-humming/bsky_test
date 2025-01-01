@@ -6,6 +6,7 @@ import { RepostIcon, LikeIcon } from './icons';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
 import VideoPlayer from './videoPlayer';
+import ReplyCard from './replyCard';
 
 const ProfilePost = ({ posts, did }: { posts: PostWrapper[], did:string }) => {
 
@@ -79,6 +80,7 @@ return (
     <div>
     {posts.map((postWrapper, index) => {
         const data = postWrapper.post;
+        const reply = postWrapper.reply;
         const isLiked = likedPosts.get(data.uri);
         const currentLikeCount = likeCounts.get(data.uri) || data.likeCount;
         const avatarUrl = sanitizeUrl(data.author.avatar);
@@ -109,16 +111,24 @@ return (
                 )}
                 <div>
                 {data.embed?.images?.map((image, index) => (   
-                    <div key={index} className="mt-4">
+                  
+                    <div key={index} className={`mt-4 w-full ${
+                      (image.aspectRatio?.width ?? 800) > 1000 
+                          ? 'max-w-4xl' 
+                          : (image.aspectRatio?.width ?? 800) > 600 
+                              ? 'max-w-2xl' 
+                              : 'max-w-xl'
+                    }`}>
+                      <div className="relative w-full" 
+                        style={{ aspectRatio: `${image.aspectRatio?.width ?? 4} / ${image.aspectRatio?.height ?? 3}`}}>
                         <img
-                        src={sanitizeUrl(image.fullsize)}
-                        alt={image.alt || "Embedded image"}
-                        width={400} 
-                        height={0} // Height will be determined by `aspect-[ratio]`
-                        className="rounded-lg aspect-[4/3]"
+                          src={sanitizeUrl(image.fullsize)}
+                          alt={image.alt || "Embedded image"}
+                          className="w-full h-full object-contain rounded-lg"
                         />
+                      </div>
                     </div>
-                    ))}
+                ))}
                 </div>
                 <div>
                     {data.embed?.external && 
@@ -135,13 +145,13 @@ return (
                             <p>{data.embed.external.description}</p>  
                             {data.embed.external.thumb &&
                             <div className="flex justify-center items-center">
-                                <img
-                                src={sanitizeUrl(data.embed.external.thumb)} 
-                                alt={"External image content"}
-                                width={400} 
-                                height={0} // Height will be determined by `aspect-[ratio]`
-                                className="rounded-lg aspect-[4/3]"
-                                />  
+                              <div className="max-w-xl w-full">
+                                  <img
+                                    src={sanitizeUrl(data.embed.external.thumb)} 
+                                    alt="External image content"
+                                    className="w-full max-h-[500px] object-contain rounded-lg"
+                                  />
+                              </div>
                             </div>}
                         </div>
                     }
@@ -150,6 +160,7 @@ return (
                       thumbnail={data.embed.thumbnail} />
                     )}
                 </div>
+                { data.record?.reply && <ReplyCard reply={reply} /> }
                 <div className="flex items-center justify-center">
                   <RepostIcon/>
                   <p className="p-2">{data.repostCount}</p> 
